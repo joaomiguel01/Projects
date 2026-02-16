@@ -1,34 +1,39 @@
-from PyQt5.QtWidgets import (QWidget, QMainWindow, QPushButton, QLabel, QLineEdit,
-                             QScrollArea, QVBoxLayout, QHBoxLayout, QCheckBox, QSizePolicy,
-                             QMessageBox)
+from PyQt5.QtWidgets import (QMainWindow, QWidget, QPushButton, QLabel, QVBoxLayout, QHBoxLayout,
+                             QLineEdit, QScrollArea, QCheckBox, QSizePolicy, QMessageBox)
 from PyQt5.QtCore import Qt, pyqtSignal
-from ..Models.Task import Task
-from ..Services.TaskService import TaskService
+from ..Services.ShopService import ShopService
+from ..Models.Shopping import Shopping
 
-class TaskView(QWidget):
+class ShopView(QWidget):
     delete_requested = pyqtSignal(str)
-    update_requested = pyqtSignal(Task)
+    update_requested = pyqtSignal(Shopping)
 
-    def __init__(self, task: Task):
+    def __init__(self, shop: Shopping):
         # Configs
         super().__init__()
-        self._task_id = task.task_id
+        self._shop_id = shop.shop_id
+        self._name = shop.name
+        self._quantity = shop.quantity
 
         self.check_box = QCheckBox(self)
-        self.title_label = QLabel(self, text=task.title)
+        self.title_label = QLabel(self, text=shop.__str__())
         self.title_label.setWordWrap(True)
         self.title_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
         self.edit_button = QPushButton(self, text="✏️")
         self.delete_button = QPushButton(self, text="❌")
-        self.title_entry = QLineEdit(self)
-        self.title_entry.setPlaceholderText("Enter a new title: ")
-        self.title_entry.hide()
+        self.name_entry = QLineEdit(self)
+        self.name_entry.setPlaceholderText("Enter a new name: ")
+        self.name_entry.hide()
+        self.quantity_entry = QLineEdit(self)
+        self.quantity_entry.setPlaceholderText("Enter a new quantity: ")
+        self.quantity_entry.hide()
 
         # Signals and Controlls
         self.delete_button.clicked.connect(self.request_delete)
         self.edit_button.clicked.connect(self.update_mode)
-        self.title_entry.returnPressed.connect(self.commit_update)
+        self.name_entry.returnPressed.connect(self.commit_update)
+        self.quantity_entry.returnPressed.connect(self.commit_update)
         
 
         self.initUI()
@@ -39,13 +44,14 @@ class TaskView(QWidget):
 
         self.hbox_elements.addWidget(self.check_box)
         self.hbox_elements.addWidget(self.title_label, 1)
-        self.hbox_elements.addWidget(self.title_entry, 1)
+        self.hbox_elements.addWidget(self.name_entry, 1)
+        self.hbox_elements.addWidget(self.quantity_entry, 1)
         self.hbox_elements.addWidget(self.edit_button)
         self.hbox_elements.addWidget(self.delete_button)
 
         self.setLayout(self.hbox_elements)
 
-        self.setObjectName("task_view")
+        self.setObjectName("shop_view")
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.title_label.setStyleSheet("background-color: transparent;")
         self.edit_button.setCursor(Qt.PointingHandCursor)
@@ -68,32 +74,41 @@ class TaskView(QWidget):
             """)
 
     def request_delete(self):
-        self.delete_requested.emit(str(self._task_id))
+        self.delete_requested.emit(str(self._shop_id))
 
     def update_mode(self):
         self.title_label.hide()
         self.check_box.hide()
         self.delete_button.hide()
-        self.title_entry.setText(self.title_label.text())
-        self.title_entry.show()
-        self.title_entry.setFocus()
+        self.name_entry.setText(self._name)
+        self.name_entry.show()
+        self.quantity_entry.setText(str(self._quantity))
+        self.quantity_entry.show()
+        self.name_entry.setFocus()
         self.edit_button.setText("💾")
         self.edit_button.clicked.disconnect(self.update_mode)
         self.edit_button.clicked.connect(self.commit_update)
     
     def commit_update(self):
-        new_title = self.title_entry.text().strip().upper()
-
-        if not new_title:
-            QMessageBox.warning(self, "Warning", "Task title cannot be empty!")
+        try:
+            new_name = self.name_entry.text().strip().upper()
+            new_quantity = int(self.quantity_entry.text().strip())
+        except Exception as e:
+            QMessageBox.critical(self, "ERROR", "Invalid data")
             return
 
-        if new_title:
-            updated_task = Task(task_id=self._task_id, title=new_title)
-            self.update_requested.emit(updated_task)
-            self.title_label.setText(new_title)
+        if not new_name or not new_quantity:
+            QMessageBox.warning(self, "Warning", "Fields cannot be empty!")
+            return
 
-        self.title_entry.hide()
+        updated_shop = Shopping(shop_id=self._shop_id, name=new_name, quantity=new_quantity)
+        self.update_requested.emit(updated_shop)
+        self.title_label.setText(f"Name: {new_name} | Quantity: {new_quantity}")
+        self._name = new_name
+        self._quantity = new_quantity
+
+        self.name_entry.hide()
+        self.quantity_entry.hide()
         self.title_label.show()
         self.check_box.show()
         self.delete_button.show()
@@ -102,22 +117,24 @@ class TaskView(QWidget):
         self.edit_button.clicked.connect(self.update_mode)
 
 
-class MainScreen(QMainWindow):
-    def __init__(self, t_service: TaskService):
+class MainWindow(QMainWindow):
+    def __init__(self, s_service: ShopService):
         # Configs
         super().__init__()
-        self.setWindowTitle("To-Do App")
+        self.setWindowTitle("Shop List")
         self.resize(650, 700)
         self.move(600, 150)
-        self._t_service = t_service
+        self._shop_service = s_service
 
         # Widgets
-        self.title_label = QLabel(self, text="To-Do List 📝")
-        self.task_entry = QLineEdit(self)
-        self.task_entry.setPlaceholderText("Enter a Task:")
+        self.title_label = QLabel(self, text="Shop List 📝")
+        self.name_entry = QLineEdit(self)
+        self.name_entry.setPlaceholderText("Enter a shop name:")
+        self.quantity_entry = QLineEdit(self)
+        self.quantity_entry.setPlaceholderText("Enter a shop quantity:")
         self.add_button = QPushButton(self, text="Add")
-        self.task_container = QWidget()
-        self.task_scroll_area = QScrollArea(self)
+        self.shop_container = QWidget()
+        self.shop_scroll_area = QScrollArea(self)
 
         self.initUI()
     
@@ -125,30 +142,32 @@ class MainScreen(QMainWindow):
         central = QWidget()
         self.main_layout = QVBoxLayout()
         self.entry_elements = QHBoxLayout()
-        self.tasks = QVBoxLayout()
+        self.shops = QVBoxLayout()
 
         # UI Configs
-        self.entry_elements.addWidget(self.task_entry)
+        self.entry_elements.addWidget(self.name_entry)
+        self.entry_elements.addWidget(self.quantity_entry)
         self.entry_elements.addWidget(self.add_button)
-        self.task_container.setLayout(self.tasks)
-        self.task_scroll_area.setWidget(self.task_container)
-        self.task_scroll_area.setWidgetResizable(True)
+        self.shop_container.setLayout(self.shops)
+        self.shop_scroll_area.setWidget(self.shop_container)
+        self.shop_scroll_area.setWidgetResizable(True)
 
         self.main_layout.addWidget(self.title_label)
         self.main_layout.addLayout(self.entry_elements)
-        self.main_layout.addWidget(self.task_scroll_area)
+        self.main_layout.addWidget(self.shop_scroll_area)
 
         self.setCentralWidget(central)
         central.setLayout(self.main_layout)
 
         self.add_button.setCursor(Qt.PointingHandCursor)
-        self.task_container.setObjectName("task_container")
+        self.shop_container.setObjectName("shop_container")
         self.title_label.setObjectName("title_label")
-        self.tasks.setContentsMargins(10, 5, 10, 5)
-        self.tasks.setAlignment(Qt.AlignTop)
+        self.shops.setContentsMargins(10, 5, 10, 5)
+        self.shops.setAlignment(Qt.AlignTop)
 
-        self.add_button.clicked.connect(self.add_task)
-        self.task_entry.returnPressed.connect(self.add_task)
+        self.add_button.clicked.connect(self.add_shop)
+        self.name_entry.returnPressed.connect(self.add_shop)
+        self.quantity_entry.returnPressed.connect(self.add_shop)
 
         # CSS
         self.setStyleSheet("""
@@ -159,12 +178,12 @@ class MainScreen(QMainWindow):
             color: white;
         }
 
-        QWidget#task_container {
+        QWidget#shop_container {
             background-color: #13131C;
             border-radius: 10px;                  
         }
                            
-        QWidget#task_view {
+        QWidget#shop_view {
             background-color: #24242B;
             border-radius: 12px;
             max-height: 100px;
@@ -215,67 +234,68 @@ class MainScreen(QMainWindow):
         }
         """)
 
-        self.load_tasks()
+        self.load_shops()
     
-    def load_tasks(self) -> None:
-        tasks = self._t_service.get_all_tasks()
-        for i in reversed(range(self.tasks.count())):
-            item = self.tasks.itemAt(i)
+    def load_shops(self) -> None:
+        shops = self._shop_service.get_all_shops()
+        for i in reversed(range(self.shops.count())):
+            item = self.shops.itemAt(i)
             widget = item.widget()
             if widget:
-                # Remove o widget do layout e marca para deleção
-                self.tasks.takeAt(i)
+                self.shops.takeAt(i)
                 widget.setParent(None)
                 widget.deleteLater()
         
-        # Atualiza o container e o scroll
-        self.task_container.updateGeometry()
-        self.task_scroll_area.widget().adjustSize()
-        self.task_scroll_area.update()
+        self.shop_container.updateGeometry()
+        self.shop_scroll_area.widget().adjustSize()
+        self.shop_scroll_area.update()
 
-        for t in tasks:
-            widget = TaskView(t)
-            widget.delete_requested.connect(self.delete_task)
-            widget.update_requested.connect(self.update_task)
-            self.tasks.addWidget(widget)
-
-    def add_task(self):
+        for s in shops:
+            widget = ShopView(s)
+            widget.delete_requested.connect(self.delete_shop)
+            widget.update_requested.connect(self.update_shop)
+            self.shops.addWidget(widget)
+    
+    def add_shop(self) -> None:
         try:
-            task_title = self.task_entry.text().strip()
+            shop_name = self.name_entry.text().strip()
+            quantity = int(self.quantity_entry.text().strip())
 
-            if not task_title:
-                raise ValueError("Enter a Task!")
+            if not shop_name or not quantity:
+                raise ValueError("Enter a valid shop data")
 
-            task = self._t_service.add_task(task_title)
-            task_widget = TaskView(task)
-            task_widget.delete_requested.connect(self.delete_task)
-            task_widget.update_requested.connect(self.update_task)
-            self.tasks.addWidget(task_widget, alignment=Qt.AlignTop)
+            shop = self._shop_service.add_shop(shop_name, quantity)
+            shop_widget = ShopView(shop)
+            shop_widget.delete_requested.connect(self.delete_shop)
+            shop_widget.update_requested.connect(self.update_shop)
+            self.shops.addWidget(shop_widget, alignment=Qt.AlignTop)
             
-            self.task_entry.clear()
+            self.name_entry.clear()
+            self.quantity_entry.clear()
         except Exception as e:
             QMessageBox.critical(self, "ERROR", str(e))
     
-    def delete_task(self, task_id: str):
+    def delete_shop(self, shop_id: str):
         confirm = QMessageBox.question(self, "Confirm Delete", 
-                                       "Are you sure you want to delete this task?",
+                                       "Are you sure you want to delete this shop?",
                                        QMessageBox.Yes | QMessageBox.No)
 
         if confirm == QMessageBox.Yes:
-            success = self._t_service.delete_task(task_id)
+            success = self._shop_service.delete_shop(shop_id)
             if success:
-                for i in reversed(range(self.tasks.count())):
-                    widget = self.tasks.itemAt(i).widget()
-                    if getattr(widget, "_task_id", None) == task_id:
+                for i in reversed(range(self.shops.count())):
+                    widget = self.shops.itemAt(i).widget()
+                    if getattr(widget, "_shop_id", None) == shop_id:
                         widget.setParent(None)
                         widget.deleteLater()
                         break
                 
-                self.load_tasks()
+                self.load_shops()
             else:
-                QMessageBox.critical(self, "ERROR", "Could not delete task!")
+                QMessageBox.critical(self, "ERROR", "Could not delete shop!")
     
-    def update_task(self, updated_task: Task):
-        success = self._t_service.update_task(updated_task)
+    def update_shop(self, updated_shop: Shopping) -> None:
+        success = self._shop_service.update_shop(updated_shop)
         if not success:
-            QMessageBox.critical(self, "ERROR", "Could not update task!")
+            QMessageBox.critical(self, "ERROR", "Could not update Shop!")
+        

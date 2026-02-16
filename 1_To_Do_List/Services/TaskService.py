@@ -1,6 +1,5 @@
 from ..Repositories.TaskRepository import TaskRepository
 from ..Models.Task import Task
-from uuid import UUID
 
 class TaskService:
     def __init__(self, task_repo: TaskRepository):
