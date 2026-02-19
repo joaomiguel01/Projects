@@ -1,0 +1,185 @@
+/* GENERAL CONFIGS */
+*{
+    background-color: rgb(31, 31, 31);
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* HEADER STYLE */
+header{
+    display: flex;
+    align-items: center;
+    justify-content: right;
+    gap: 10px;
+    margin: 10px;
+}
+
+header a {
+    color: white;
+    font-family: Segoe UI;
+    font-size: 14px;
+    margin-right: 5px;
+    text-decoration: none;
+}
+
+header a:hover{
+    text-decoration: underline;
+}
+
+.google-apps img{
+    width: 30px;
+    height: 30px;
+    margin-right: 5px;
+    margin-left: 5px;
+    color: gray;
+    cursor: pointer;
+    transition: .2s
+}
+
+.google-apps img:hover{
+    background-color: rgb(56, 56, 56);
+    border-radius: 20px;
+    padding: 5px;
+}
+
+.account-logo img{
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.account-logo img:hover{
+    border: 2px solid rgb(56, 56, 56);
+}
+
+/* MAIN STYLE */
+main{
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    align-items: center;
+    flex: 1;
+}
+
+main h1 {
+    color: white;
+    font-family: "Google Sans";
+    font-size: 80px;
+}
+
+main .search-bar {
+    display: flex;
+    gap: 10px;
+    background-color: rgb(70, 71, 80);
+    padding: 20px;
+    border-radius: 50px;
+    margin-bottom: 30px;
+    align-items: center;
+}
+
+main .search-bar:hover {
+    background-color: rgb(90, 91, 101);
+}
+
+.search-bar .plus-btn {
+    background: transparent;
+    border: none;
+    font-size: 30px;
+    cursor: pointer;
+    color: rgb(193, 188, 188);
+    transition: .2s;
+}
+
+.search-bar .plus-btn:hover {
+    background-color: rgb(59, 56, 56);
+    border-radius: 50px;
+}
+
+.search-bar input {
+    min-width: 550px;
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    color: rgb(215, 215, 215);
+}
+
+.search-bar input:focus {
+    outline: none;
+}
+
+.search-bar a {
+    background: transparent;
+    border: none;
+}
+
+.search-bar a button {
+    background: transparent;
+    border: none;
+}
+
+.search-bar a button i {
+    background: transparent;
+    color: rgb(193, 188, 188);
+    font-size: 30px;
+    margin-right: 5px;
+    cursor: pointer;
+}
+
+main .main-container button.bottom-btn {
+    background-color: rgb(47, 47, 47);
+    border: none;
+    color: rgb(207, 205, 205);
+    font-size: 16px;
+    padding: 10px;
+    border-radius: 10px;
+    margin-right: 20px;
+    cursor: pointer;
+}
+
+main .main-container button.bottom-btn:hover{
+    border: 1px solid rgb(114, 114, 114);
+}
+
+/* FOOTER STYLE */
+footer {
+    margin-top: 180px;
+    background-color: rgb(19, 19, 19);
+    padding: 20px;
+}
+
+footer .line-footer {
+    color: white;
+    background: transparent;
+}
+
+footer .line-footer label, p, a {
+    background: transparent;
+}
+
+footer .line-footer a {
+    color: white;
+    text-decoration: none;
+    margin-right: 10px;
+}
+
+footer .line-footer a:hover {
+    text-decoration: underline;
+}
+
+footer .border {
+    display: flex;
+    justify-content: space-between;
+}
+
+.border{
+    margin-top: 10px;
+    border-top: 1px solid rgb(86, 86, 86);
+}
