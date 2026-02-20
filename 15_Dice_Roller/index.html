@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dice Simulator</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1e1e2f, #27293d);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background: #2f3245;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            width: 320px;
+            box-shadow: 0 10px 20px rgb(0, 0, 0, 0.3);
+        }
+
+        select, button {
+            padding: 8px;
+            margin: 10px 0;
+            width: 100%;
+            border-radius: 5px;
+            border: none;
+            font-size: 16px;
+        }
+
+        button {
+            background: #4e73df;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #2e59d9;
+        }
+
+        .result {
+            font-size: 50px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .history {
+            margin-top: 15px;
+            max-height: 100px;
+            overflow-y: auto;
+            text-align: left;
+            font-size: 14px;
+            background: #1e1e2f;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🎲 Simulador de Dado</h2>
+
+        <select id="Dice-type">
+            <option value="4">D4</option>
+            <option value="6" selected>D6</option>
+            <option value="8">D8</option>
+            <option value="10">D10</option>
+            <option value="12">D12</option>
+            <option value="20">D20</option>
+        </select>
+
+        <div class="result" id="result">-</div>
+
+        <button onclick="rollDice()">Roll</button>
+
+        <div class="history" id="history">
+            <strong>History:</strong><br>
+        </div>
+    </div>
+
+    <script>
+        function rollDice() {
+            let type = parseInt(document.getElementById("Dice-type").value);
+            let number = Math.floor(Math.random() * type) + 1;
+
+            document.getElementById("result").textContent = number;
+
+            let history = document.getElementById("history");
+            history.innerHTML += "D" + type + ": " + number + "<br>";
+        }
+    </script>
+</body>
+</html>
